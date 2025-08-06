@@ -19,11 +19,12 @@ jobs:
 
   unit-test:
     name: Unit Test
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
+        os: ["ubuntu-24.04", "macos-15", "macos-14"]
         swift: ["latest", "6.2-snapshot"]
 
     steps:
@@ -44,7 +45,7 @@ jobs:
         run: swift test -Xswiftc -warnings-as-errors --enable-code-coverage
 
       - name: Merge code coverage
-        if: matrix.swift == 'latest'
+        if: matrix.swift == 'latest' && matrix.os == 'ubuntu-24.04'
         run: |
           llvm-cov export -format "lcov" \
             .build/debug/swift-otelPackageTests.xctest \
@@ -55,7 +56,7 @@ jobs:
           > info.lcov
 
       - name: Upload code coverage report to Codecov
-        if: matrix.swift == 'latest'
+        if: matrix.swift == 'latest' && matrix.os == 'ubuntu-24.04'
         uses: codecov/codecov-action@v5.4.3
         with:
           files: ./info.lcov
